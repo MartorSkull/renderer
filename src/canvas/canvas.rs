@@ -1,11 +1,11 @@
-use minifb::{Window, WindowOptions};
+use minifb::{Window, WindowOptions, Key};
+use std::{thread, time};
 
 use crate::canvas::color::Color;
 
 pub struct Canvas{
     pub window: Window,
     buffer: Vec<u32>,
-    updated: bool,
 }
 
 impl Canvas {
@@ -24,13 +24,10 @@ impl Canvas {
 
         window.limit_update_rate(Some(std::time::Duration::from_micros(16600)));
 
-        Canvas{ window, buffer, updated: true }
+        Canvas{ window, buffer}
     }
 
     pub fn put_pixel<C: Color>(&mut self, x: isize, y: isize, color: C) {
-        if self.updated {
-            self.updated = false;
-        }
         let w = self.get_width();
         let h = self.get_height();
         assert!(y.abs() <= h/2 && x.abs() <= w/2);
@@ -41,11 +38,15 @@ impl Canvas {
     }
 
     pub fn show(&mut self) {
-        if !self.updated {
-            let (w, h) = self.window.get_size();
-            self.window
-                .update_with_buffer(&self.buffer, w, h)
-                .unwrap();
+        let (w, h) = self.window.get_size();
+        self.window
+            .update_with_buffer(&self.buffer, w, h)
+            .unwrap();
+    }
+
+    pub fn show_hold(&mut self) {
+        while self.window.is_open() && !self.window.is_key_down(Key::Escape) {
+            self.show()
         }
     }
 
