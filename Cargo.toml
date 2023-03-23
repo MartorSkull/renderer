@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 minifb = "0.24"
 hsl = "0.1.1"
+derive_builder = "0.12.0"
