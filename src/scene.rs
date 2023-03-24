@@ -111,7 +111,7 @@ impl Renderable for Triangle {
 
     let q = origin+direction*t;
 
-    let check = vec![(self.b, self.a), (self.c, self.a), (self.a, self.c)]
+    let check = vec![(self.b, self.a), (self.c, self.b), (self.a, self.c)]
       .into_iter()
       .fold(
         true,

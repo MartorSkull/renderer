@@ -2,7 +2,7 @@ use std::ops::{Mul, Add, Sub, Neg, Div};
 
 use num_traits::Float;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct Vector3<T> {
   pub x: T,
   pub y: T,
