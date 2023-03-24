@@ -130,6 +130,7 @@ fn apply_quat<T: Into<Quaternion>>(q: Quaternion, vector: T) -> Vector3<f64> {
 
 pub trait Rotatable {
   fn rotate(&mut self, q: Quaternion);
+  fn set_rotation(&mut self, q: Quaternion);
 }
 
 impl<T: Into<f64>> Into<Quaternion> for (T, T, T) {

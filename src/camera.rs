@@ -45,11 +45,18 @@ impl Camera {
   pub fn get_position(&self) -> Vector3<f64> {
     self.position
   }
+
+  pub fn move_to(&mut self, v: Vector3<f64>){
+    self.position += v.rotate(self.rotation);
+  }
 }
 
 impl Rotatable for Camera {
   fn rotate(&mut self, q: Quaternion) {
     self.rotation = self.rotation * q;
+  }
+  fn set_rotation(&mut self, q: Quaternion) {
+      self.rotation = q;
   }
 }
 

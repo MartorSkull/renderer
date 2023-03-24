@@ -1,4 +1,4 @@
-use std::ops::{Mul, Add, Sub, Neg, Div};
+use std::ops::{Mul, Add, Sub, Neg, Div, AddAssign};
 
 use num_traits::Float;
 
@@ -105,4 +105,10 @@ impl<T: Float> Into<Vector3<T>> for (T, T, T) {
   fn into(self) -> Vector3<T> {
     Vector3::new(self.0, self.1, self.2)
   }
+}
+
+impl<T: Float> AddAssign for Vector3<T> {
+    fn add_assign(&mut self, rhs: Self) {
+        *self = *self + rhs;
+    }
 }

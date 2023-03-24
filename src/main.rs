@@ -1,6 +1,7 @@
-use std::{f64::consts::PI, io::{Error, ErrorKind, Result}};
+use std::{f64::consts::PI, io::{Error, ErrorKind, Result}, process::exit};
 
 use camera::{CameraBuilder};
+use quaternion::Rotatable;
 use scene::{Scene, Sphere, Triangle};
 use vector::Vector3;
 
@@ -29,7 +30,7 @@ fn main() -> Result<()> {
 }
 
 fn test_scene(mut canvas: Canvas) -> Result<()>  {
-  let camera = CameraBuilder::default()
+  let mut camera = CameraBuilder::default()
     .canvas_size(canvas.get_size())
     .viewport_size((VIEWPORT_WIDTH, VIEWPORT_HEIGHT))
     .position(Vector3::new(3.0, 0.0, 3.0))
@@ -44,14 +45,45 @@ fn test_scene(mut canvas: Canvas) -> Result<()>  {
     Vector3::new(0.0, 0.1, 2.2),
     Vector3::new(0.0, 0.0, 2.5),
     Vector3::new(0.0, -0.1, 2.2),
-    0xFFFF00));
-  for (x, y) in canvas.coord_iter() {
-    let ray = camera.get_canvas_ray(x, y);
-    let color = scene.trace_ray(camera.get_position(), ray, Some(0.0), None);
-    canvas.put_pixel(x, y, color)
-  }
+    0xFFFF00)
+  );
+  while canvas.window.is_open(){
+    for key in canvas.window.get_keys() {
+      match key {
+        // Movement
+        minifb::Key::W => camera.move_to(Vector3::new(0.0, 0.0, 0.25)),
+        minifb::Key::S => camera.move_to(Vector3::new(0.0, 0.0, -0.25)),
+        minifb::Key::A => camera.move_to(Vector3::new(-0.25, 0.0, 0.0)),
+        minifb::Key::D => camera.move_to(Vector3::new(0.25, 0.0, 0.0)),
+        minifb::Key::Space => camera.move_to(Vector3::new(0.0, -0.25, 0.0)),
+        minifb::Key::LeftCtrl => camera.move_to(Vector3::new(0.0, 0.25, 0.0)),
 
-  canvas.show_hold();
+        // Rotation
+        minifb::Key::Q => camera.rotate(Quaternion::z_rot(-PI/32.0)),
+        minifb::Key::E => camera.rotate(Quaternion::z_rot(PI/32.0)),
+        minifb::Key::Down => camera.rotate(Quaternion::x_rot(-PI/32.0)),
+        minifb::Key::Up => camera.rotate(Quaternion::x_rot(PI/32.0)),
+        minifb::Key::Right => camera.rotate(Quaternion::y_rot(PI/32.0)),
+        minifb::Key::Left => camera.rotate(Quaternion::y_rot(-PI/32.0)),
+
+        // Window Control
+        minifb::Key::Escape => exit(0),
+        minifb::Key::Home => {
+          camera.move_to(Vector3::zero());
+          camera.set_rotation(Quaternion::identity())
+        },
+
+        _ => {}
+    }
+    }
+
+    for (x, y) in canvas.coord_iter() {
+      let ray = camera.get_canvas_ray(x, y);
+      let color = scene.trace_ray(camera.get_position(), ray, Some(0.0), None);
+      canvas.put_pixel(x, y, color)
+    }
+    canvas.show();
+  }
 
   Ok(())
 }
