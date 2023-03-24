@@ -1,5 +1,9 @@
 use std::{ops::{Mul, Add}};
 
+use num_traits::Inv;
+
+use crate::vector::Vector3;
+
 #[derive(Debug, Clone, Copy)]
 pub struct Quaternion {
   w: f64,
@@ -45,16 +49,7 @@ impl Quaternion {
     }
   }
 
-  pub fn invert(&self) -> Self {
-    Quaternion {
-      w: self.w,
-      x: -self.x,
-      y: -self.y,
-      z: -self.z
-    }
-  }
-
-  pub fn apply_quat<T: Into<Quaternion>>(self, vector: T) -> (f64, f64, f64) {
+  pub fn apply_quat<T: Into<Quaternion>>(self, vector: T) -> Vector3<f64> {
     apply_quat(self, vector)
   }
 }
@@ -87,17 +82,6 @@ impl<T: Into<f64> + Copy> Mul<T> for Quaternion {
   }
 }
 
-impl<T: Into<f64>> Into<Quaternion> for (T, T, T) {
-  fn into(self) -> Quaternion {
-    Quaternion {
-      w: 1.0,
-      x: self.0.into(),
-      y: self.1.into(),
-      z: self.2.into()
-    }
-  }
-}
-
 impl Add for Quaternion {
   type Output = Self;
 
@@ -107,6 +91,18 @@ impl Add for Quaternion {
       x: self.x+rhs.x,
       y: self.y+rhs.y,
       z: self.z+rhs.z
+    }
+  }
+}
+
+impl Inv for Quaternion {
+  type Output = Self;
+  fn inv(self) -> Self::Output {
+    Self::Output {
+      w: self.w,
+      x: -self.x,
+      y: -self.y,
+      z: -self.z
     }
   }
 }
@@ -121,17 +117,39 @@ pub trait InnerRotatable {
   fn rotate(self, q: Quaternion) -> Self;
 }
 
-impl InnerRotatable for (f64, f64, f64) {
+impl InnerRotatable for Vector3<f64> {
   fn rotate(self, q: Quaternion) -> Self {
     apply_quat(q, self)
   }
 }
 
-fn apply_quat<T: Into<Quaternion>>(q: Quaternion, vector: T) -> (f64, f64, f64) {
-  let a = q*vector.into()*q.invert();
-  (a.x, a.y, a.z)
+fn apply_quat<T: Into<Quaternion>>(q: Quaternion, vector: T) -> Vector3<f64> {
+  let a = q*vector.into()*q.inv();
+  Vector3::new(a.x, a.y, a.z)
 }
 
 pub trait Rotatable {
   fn rotate(&mut self, q: Quaternion);
+}
+
+impl<T: Into<f64>> Into<Quaternion> for (T, T, T) {
+  fn into(self) -> Quaternion {
+    Quaternion {
+      w: 0.0,
+      x: self.0.into(),
+      y: self.1.into(),
+      z: self.2.into()
+    }
+  }
+}
+
+impl<T: Into<f64>> Into<Quaternion> for Vector3<T> {
+  fn into(self) -> Quaternion {
+    Quaternion {
+      w: 0.0,
+      x: self.x.into(),
+      y: self.y.into(),
+      z: self.z.into()
+    }
+  }
 }

@@ -1,5 +1,11 @@
 use hsl::HSL;
 
+pub trait ConstColor<const T: u32> {
+  fn get_color() -> u32{
+    T
+  }
+}
+
 pub trait Color {
   fn to_color(&self) -> u32;
 }
